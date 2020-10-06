@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 
-final Color myColor = Color(0xff222f3e);
-final Color myColor2 = Color(0xff2f3640);
+final Color bgColor = Color(0xff0E0D0D);
+final Color darkColor = Color(0xff5C5855);
+final Color lightColor = Color(0xffEA5E33);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,8 +25,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  static String query = "wallpapers";
   List<dynamic> wallpapersList;
-  String apiUrl = "https://api.pexels.com/v1/search?query=random&per_page=80";
+  Icon searchIcon = Icon(Icons.search);
+  Widget searchBar = Text("FotoApp");
 
   @override
   void initState() {
@@ -34,6 +37,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initialize() async {
+    var apiUrl =
+        "https://api.pexels.com/v1/search?query=" + query + "&per_page=500";
     http.Response response = await http.get(
       apiUrl,
       headers: {
@@ -41,11 +46,13 @@ class _MyAppState extends State<MyApp> {
             "563492ad6f91700001000001999da5bd71d04ece9af9ba1a03e8beaf"
       },
     );
+    print(apiUrl);
     if (response.statusCode == 200) {
       try {
         final responseJson = jsonDecode(response.body);
-        wallpapersList = responseJson['photos'];
-        print(wallpapersList[1]["src"]["medium"]);
+        setState(() {
+          wallpapersList = responseJson['photos'];
+        });
       } catch (e) {
         print(e);
       }
@@ -55,23 +62,41 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    TextStyle mystyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
     var tabindex = 0;
-    void incrementTab(index) {
-      setState(() {
-        tabindex = index;
-      });
-    }
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(
-          title: Text("FotoApp"),
-          backgroundColor: myColor,
+          title: searchBar,
+          backgroundColor: bgColor,
           actions: [
             IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {},
+              icon: searchIcon,
+              onPressed: () {
+                setState(() {
+                  if (this.searchIcon.icon == Icons.search) {
+                    this.searchIcon = Icon(Icons.cancel);
+                    this.searchBar = TextField(
+                      textInputAction: TextInputAction.go,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: "Search",
+                          hintStyle: TextStyle(color: Colors.white)),
+                      onSubmitted: (value) {
+                        query = value;
+                        initialize();
+                        print(query);
+                      },
+                    );
+                  } else {
+                    this.searchIcon = Icon(Icons.search);
+                    this.searchBar = Text("FotoApp");
+                  }
+                });
+              },
               color: Colors.white,
             )
           ],
@@ -81,7 +106,7 @@ class _MyAppState extends State<MyApp> {
                 padding: const EdgeInsets.all(8.0),
                 crossAxisCount: 4,
                 itemBuilder: (BuildContext context, int index) {
-                  String imgPath = wallpapersList[index]["src"]["medium"];
+                  String imgPath = wallpapersList[index]["src"]["large"];
                   return Card(
                     child: InkWell(
                       onTap: () => Navigator.push(
@@ -108,25 +133,41 @@ class _MyAppState extends State<MyApp> {
                   backgroundColor: Colors.white,
                 ),
               ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: myColor,
-          selectedItemColor: Colors.black,
-          unselectedItemColor: Colors.grey,
-          currentIndex: tabindex,
-          type: BottomNavigationBarType.shifting,
-          items: [
-            BottomNavigationBarItem(
-                icon: Icon(Icons.image), title: Text("Wallpapers")),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.view_list), title: Text("Categories")),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.info), title: Text("About"))
-          ],
-          onTap: (index) {
-            incrementTab(index);
-          },
+        bottomNavigationBar: Theme(
+          data: Theme.of(context).copyWith(
+            canvasColor: darkColor,
+            textTheme: Theme.of(context)
+                .textTheme
+                .copyWith(caption: TextStyle(color: Colors.black)),
+          ),
+          child: BottomNavigationBar(
+            selectedItemColor: lightColor,
+            unselectedItemColor: Colors.grey,
+            currentIndex: tabindex,
+            type: BottomNavigationBarType.shifting,
+            items: [
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.image),
+                  title: Text(
+                    "Wallpapers",
+                    style: mystyle,
+                  )),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.view_list),
+                  title: Text(
+                    "Categories",
+                    style: mystyle,
+                  )),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.info),
+                  title: Text(
+                    "About",
+                    style: mystyle,
+                  ))
+            ],
+          ),
         ),
-        backgroundColor: myColor2,
+        backgroundColor: bgColor,
       ),
     );
   }

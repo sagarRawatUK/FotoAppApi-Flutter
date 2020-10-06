@@ -44,7 +44,7 @@ class _ImagePathState extends State<ImagePath> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: myColor,
+        backgroundColor: bgColor,
         leading: IconButton(
           icon: Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
@@ -75,7 +75,7 @@ class _ImagePathState extends State<ImagePath> {
           ),
         ),
       ),
-      backgroundColor: myColor2,
+      backgroundColor: bgColor,
     );
   }
 }
